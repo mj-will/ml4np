@@ -5,10 +5,10 @@ from subprocess import call
 from os.path import isfile
 
 from keras.models import Sequential
-from keras.layers.core import Dense, Activation
+from keras.layers.core import Dense, Activation, Dropout
 from keras.regularizers import l2
 from keras import initializers
-from keras.optimizers import SGD
+from keras.optimizers import SGD, Nadam
 
 # Setup TMVA
 TMVA.Tools.Instance()
@@ -53,11 +53,14 @@ dataloader.PrepareTrainingAndTestTree(TCut(''),
 # Define model
 model = Sequential()
 model.add(Dense(64, activation='relu', kernel_regularizer=l2(1e-5), input_dim=Nvar))
+model.add(Dropout(0.2))
+model.add(Dense(64, activation='relu', kernel_regularizer=l2(1e-5)))
+model.add(Dropout(0.2))
 #model.add(Dense(32, init=normal, activation='relu', W_regularizer=l2(1e-5)))
 model.add(Dense(2, activation='softmax'))
 
 # Set loss and optimizer
-model.compile(loss='categorical_crossentropy', optimizer=SGD(lr=0.01), metrics=['accuracy',])
+model.compile(loss='categorical_crossentropy', optimizer=SGD(lr=0.01, momentum=0.9, decay=0.0, nesterov=True), metrics=['accuracy',])
 
 # Store model to file
 model.save('model.h5')
@@ -72,7 +75,7 @@ factory.BookMethod(dataloader, TMVA.Types.kMLP, "MLP", "H:!V:NeuronType=tanh:Var
 factory.BookMethod(dataloader, TMVA.Types.kMLP, "MLPBNN", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=60:HiddenLayers=N+5:TestRate=5:TrainingMethod=BFGS:UseRegulator")
 
 factory.BookMethod(dataloader, TMVA.Types.kPyKeras, 'PyKeras',
-        'H:!V:VarTransform=D,G:FilenameModel=model.h5:NumEpochs=20:BatchSize=32')
+        'H:!V:VarTransform=D,G:FilenameModel=model.h5:NumEpochs=40:BatchSize=32')
 
 # Run training, test and evaluation
 factory.TrainAllMethods()

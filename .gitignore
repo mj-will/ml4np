@@ -107,9 +107,10 @@ venv.bak/
 data/
 tutorials/
 dataset/
+papers/
 
 # root files
-*.root
+.root
 
 # models
-model*
+model.
