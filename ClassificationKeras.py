@@ -52,15 +52,15 @@ dataloader.PrepareTrainingAndTestTree(TCut(''),
 
 # Define model
 model = Sequential()
-model.add(Dense(64, activation='relu', kernel_regularizer=l2(1e-5), input_dim=Nvar))
-model.add(Dropout(0.2))
-model.add(Dense(64, activation='relu', kernel_regularizer=l2(1e-5)))
-model.add(Dropout(0.2))
+model.add(Dense(32, activation='relu', kernel_regularizer=l2(1e-5), input_dim=Nvar))
+model.add(Dropout(0.5))
+model.add(Dense(32, activation='relu', kernel_regularizer=l2(1e-5)))
+model.add(Dropout(0.5))
 #model.add(Dense(32, init=normal, activation='relu', W_regularizer=l2(1e-5)))
 model.add(Dense(2, activation='softmax'))
 
 # Set loss and optimizer
-model.compile(loss='categorical_crossentropy', optimizer=SGD(lr=0.01, momentum=0.9, decay=0.0, nesterov=True), metrics=['accuracy',])
+model.compile(loss='categorical_crossentropy', optimizer=Nadam(), metrics=['accuracy',])
 
 # Store model to file
 model.save('model.h5')
@@ -69,6 +69,8 @@ model.summary()
 # Book methods
 
 factory.BookMethod(dataloader, TMVA.Types.kBDT, 'BDT',"!H:!V:NTrees=850:MinNodeSize=2.5%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20")
+
+factory.BookMethod(dataloader, TMVA.Types.kBDT, 'BDT+',"!H:!V:NTrees=850:MinNodeSize=2.5%:MaxDepth=4:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20")
 
 factory.BookMethod(dataloader, TMVA.Types.kMLP, "MLP", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:!UseRegulator")
 

@@ -110,7 +110,7 @@ dataset/
 papers/
 
 # root files
-.root
+*.root
 
 # models
-model.
+model.*
