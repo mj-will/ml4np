@@ -61,10 +61,11 @@ dataloader.PrepareTrainingAndTestTree(TCut(''),
 
 # Define model
 model = Sequential()
+model.add(Dense(64, activation='relu', kernel_regularizer=l2(1e-5), input_dim=Nvar))
 model.add(Dense(32, activation='relu', kernel_regularizer=l2(1e-5), input_dim=Nvar))
-model.add(Dropout(0.5))
-#model.add(Dense(32, activation='relu', kernel_regularizer=l2(1e-5)))
-#model.add(Dropout(0.5))
+#model.add(Dropout(0.))
+model.add(Dense(16, activation='relu', kernel_regularizer=l2(1e-5)))
+model.add(Dropout(0.1))
 #model.add(Dense(32,  activation='relu', kernel_regularizer=l2(1e-5)))
 model.add(Dense(2, activation='softmax'))
 
