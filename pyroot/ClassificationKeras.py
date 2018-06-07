@@ -2,7 +2,8 @@
 
 from ROOT import TMVA, TFile, TTree, TCut
 from subprocess import call
-from os.path import isfile
+from os.path import isfile, isdir
+import os
 
 from keras.models import Sequential
 from keras.layers.core import Dense, Activation, Dropout
@@ -14,12 +15,20 @@ from keras.optimizers import SGD, Nadam
 TMVA.Tools.Instance()
 TMVA.PyMethodBase.PyInitialize()
 
-output = TFile.Open('TMVA.root', 'RECREATE')
+# sav file in given location
+i = 0
+model_path = './models/'
+
+while isfile('{0}model{1}.h5'.format(model_path, i)):
+    i += 1
+name = 'PyKeras-{0}'.format(i)
+
+output = TFile.Open('TMVA.root', 'UPDATE')
 factory = TMVA.Factory('TMVAClassification', output,
         '!V:!Silent:Color:DrawProgressBar:Transformations=D,G:AnalysisType=Classification')
 
-fnameSignal = './data/rho10_tm1_sm1_stat/Signal.root'
-fnameBackground = './data/rho10_tm1_sm1_stat/Background.root'
+fnameSignal = '../data/rho10_tm1_sm1_stat/Signal.root'
+fnameBackground = '../data/rho10_tm1_sm1_stat/Background.root'
 
 # Load data
 if not isfile(fnameSignal):
@@ -54,30 +63,29 @@ dataloader.PrepareTrainingAndTestTree(TCut(''),
 model = Sequential()
 model.add(Dense(32, activation='relu', kernel_regularizer=l2(1e-5), input_dim=Nvar))
 model.add(Dropout(0.5))
-model.add(Dense(32, activation='relu', kernel_regularizer=l2(1e-5)))
-model.add(Dropout(0.5))
-#model.add(Dense(32, init=normal, activation='relu', W_regularizer=l2(1e-5)))
+#model.add(Dense(32, activation='relu', kernel_regularizer=l2(1e-5)))
+#model.add(Dropout(0.5))
+#model.add(Dense(32,  activation='relu', kernel_regularizer=l2(1e-5)))
 model.add(Dense(2, activation='softmax'))
 
 # Set loss and optimizer
 model.compile(loss='categorical_crossentropy', optimizer=Nadam(), metrics=['accuracy',])
 
 # Store model to file
-model.save('model.h5')
+model.save('{0}/model{1}.h5'.format(model_path, i))
 model.summary()
 
 # Book methods
 
-factory.BookMethod(dataloader, TMVA.Types.kBDT, 'BDT',"!H:!V:NTrees=850:MinNodeSize=2.5%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20")
+#factory.BookMethod(dataloader, TMVA.Types.kBDT, 'BDT',"!H:!V:NTrees=850:MinNodeSize=2.5%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20")
 
-factory.BookMethod(dataloader, TMVA.Types.kBDT, 'BDT+',"!H:!V:NTrees=850:MinNodeSize=2.5%:MaxDepth=4:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20")
+#factory.BookMethod(dataloader, TMVA.Types.kBDT, 'BDT+',"!H:!V:NTrees=850:MinNodeSize=2.5%:MaxDepth=4:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20")
 
-factory.BookMethod(dataloader, TMVA.Types.kMLP, "MLP", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:!UseRegulator")
+#factory.BookMethod(dataloader, TMVA.Types.kMLP, "MLP", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:!UseRegulator")
 
-factory.BookMethod(dataloader, TMVA.Types.kMLP, "MLPBNN", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=60:HiddenLayers=N+5:TestRate=5:TrainingMethod=BFGS:UseRegulator")
+#factory.BookMethod(dataloader, TMVA.Types.kMLP, "MLPBNN", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=60:HiddenLayers=N+5:TestRate=5:TrainingMethod=BFGS:UseRegulator")
 
-factory.BookMethod(dataloader, TMVA.Types.kPyKeras, 'PyKeras',
-        'H:!V:VarTransform=D,G:FilenameModel=model.h5:NumEpochs=40:BatchSize=32')
+factory.BookMethod(dataloader, TMVA.Types.kPyKeras, name,        'H:!V:VarTransform=D,G:FilenameModel=model.h5:NumEpochs=40:BatchSize=32')
 
 # Run training, test and evaluation
 factory.TrainAllMethods()

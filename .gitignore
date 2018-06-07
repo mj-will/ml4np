@@ -108,6 +108,7 @@ data/
 tutorials/
 dataset/
 papers/
+models/
 
 # root files
 *.root

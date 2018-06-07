@@ -24,8 +24,8 @@ int BDT()
    // (it is also possible to use ASCII format as input -> see TMVA Users Guide)
    TFile *inputSignal(0);
    TFile *inputBackground(0);
-   TString fnameSignal = "./data/rho10_tm1_sm1_stat/Signal.root";
-   TString fnameBackground = "./data/rho10_tm1_sm1_stat/Background.root";
+   TString fnameSignal = "../data/rho10_tm1_sm1_stat/Signal.root";
+   TString fnameBackground = "../data/rho10_tm1_sm1_stat/Background.root";
    if (!gSystem->AccessPathName( fnameSignal )) {
       inputSignal = TFile::Open( fnameSignal ); // check if file in local directory exists
    }

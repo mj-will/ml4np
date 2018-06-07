@@ -165,8 +165,8 @@ int TMVAClassification( TString myMethodList = "" )
    // (it is also possible to use ASCII format as input -> see TMVA Users Guide)
    TFile *inputSignal(0);
    TFile *inputBackground(0);
-   TString fnameSignal = "./data/rho10_tm1_sm1_stat/Signal.root";
-   TString fnameBackground = "./data/rho10_tm1_sm1_stat/Background.root";
+   TString fnameSignal = "../data/rho10_tm1_sm1_stat/Signal.root";
+   TString fnameBackground = "../data/rho10_tm1_sm1_stat/Background.root";
    if (!gSystem->AccessPathName( fnameSignal )) {
       inputSignal = TFile::Open( fnameSignal ); // check if file in local directory exists
    }
@@ -218,19 +218,19 @@ int TMVAClassification( TString myMethodList = "" )
    // Define the input variables that shall be used for the MVA training
    // note that you may also use variable expressions, such as: "3*var1/var2*abs(var3)"
    // [all types of expressions that can also be parsed by TTree::Draw( "expression" )]
-   dataloader->AddVariable( "PTime", 'F' );
    dataloader->AddVariable( "ElTime", 'F' );
-   dataloader->AddVariable( "PimTime", 'F' );
-   dataloader->AddVariable( "PipTime", 'F');
    dataloader->AddVariable( "ElP", 'F');
    dataloader->AddVariable( "ElTh", 'F');
    dataloader->AddVariable( "ElPhi", 'F');
+   dataloader->AddVariable( "PTime", 'F' );
    dataloader->AddVariable( "PP", 'F');
    dataloader->AddVariable( "PTh", 'F');
    dataloader->AddVariable( "PPhi", 'F');
+   dataloader->AddVariable( "PimTime", 'F' );
    dataloader->AddVariable( "PimP", 'F'); 
    dataloader->AddVariable( "PimTh", 'F'); 
    dataloader->AddVariable( "PimPhi", 'F'); 
+   dataloader->AddVariable( "PipTime", 'F');
    dataloader->AddVariable( "PipP", 'F'); 
    dataloader->AddVariable( "PipTh", 'F'); 
    dataloader->AddVariable( "PipPhi", 'F'); 
