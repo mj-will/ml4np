@@ -51,6 +51,8 @@ Nvar = len(include)
 for branch in signal.GetListOfBranches():
     if branch.GetName() in include:
         dataloader.AddVariable(branch.GetName())
+        print(branch.GetName())
+
 
 dataloader.AddSignalTree(signal, 1.0)
 dataloader.AddBackgroundTree(background, 1.0)
