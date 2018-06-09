@@ -1,10 +1,14 @@
-# Flux 
+#  Progress meeting 11/06/18
 
-An application architecture for React
+- What have I done?
 
+- - Learn ROOT and TMVA
+- - Initial tests and comparisons on using Keras with ROOT and TMVA with simpler dataset
+- - Get a system setup that we can use with PyTMVA, Keras and Tensorflow (NP-Phi) 
 ---
 
-### Flux Design
+### ROOT, TMVA and Python
+
 
 - Dispatcher: Manages Data Flow
 - - Stores: Handle State & Logic
