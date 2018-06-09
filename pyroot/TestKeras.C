@@ -22,6 +22,7 @@ void TestKeras()
 {
     // Load library
     TMVA::Tools::Instance();
+    TMVA::PyMethodBase::PyInitialize();
 
     // Create reader object
     TMVA::Reader *reader = new TMVA::Reader( "!Color:!Silent" );
@@ -70,19 +71,18 @@ void TestKeras()
    reader->AddVariable( "PP", &PP );
    reader->AddVariable( "PTh", &PTh );
    reader->AddVariable( "PPhi", &PPhi);
-   reader->AddVariable( "PimTime", &PimTime);
-   reader->AddVariable( "PimP", &PimP );
-   reader->AddVariable( "PimTh", &PimTh );
-   reader->AddVariable( "PimPhi", &PimPhi);
    reader->AddVariable( "PipTime", &PipTime);
    reader->AddVariable( "PipP", &PipP );
    reader->AddVariable( "PipTh", &PipTh );
    reader->AddVariable( "PipPhi", &PipPhi);
+   reader->AddVariable( "PimTime", &PimTime);
+   reader->AddVariable( "PimP", &PimP );
+   reader->AddVariable( "PimTh", &PimTh );
+   reader->AddVariable( "PimPhi", &PimPhi);
 
-   reader->BookMVA("BDT", TString("dataset/weights/TMVAClassification_BDTB.weights.xml"));
 
    reader->BookMVA("PyKeras-0", TString("dataset/weights/TMVAClassification_PyKeras-0.weights.xml"));
 
-   
+  outputFile->Close();
 
 }
