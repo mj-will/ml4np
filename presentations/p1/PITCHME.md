@@ -22,8 +22,15 @@ This allows for more complex networks to be developed in Python, but they can be
 
 ### Initial tests
 
-![fig1](figures/comparison1.pdf)
+![fig1](../../figures/comp1.eps)
 
+---
+
+<object data="https://github.com/mj-will/ml4np/blob/master/figures/comparison1.pdf" type="application/pdf" width="700px" height="700px">
+    <embed src="https://github.com/mj-will/ml4np/blob/master/figures/comparison1.pdf">
+            This browser does not support PDFs. Please download the PDF to view it: <a href="https://github.com/mj-will/ml4np/blob/master/figures/comparison1.pdf">Download PDF</a>.</p>
+    </embed>
+</object>
 
 ---
 
