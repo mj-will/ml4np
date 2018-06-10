@@ -13,7 +13,7 @@ Possible workflow is complex neural nets were used:
 - Apply network to data in ROOT using TMVA::Reader Class which can take 'PyKeras' type classifier:
 
 ```
-reader->BookMVA("PyKeras", TString("dataset/weights/TMVAClassification_PyKeras.weights.       xml"));
+reader->BookMVA("PyKeras", TString("dataset/weights/TMVAClassification_PyKeras.weights.xml"));
 ```
 
 This allows for more complex networks to be developed in Python, but they can be applied directly in a ROOT macro.
