@@ -1,0 +1,15 @@
+theme : night
+
+layout : center-right
+
+transition : none
+
+highlight : ir-black
+
+charts : true
+
+mathjax : TeX-AMS_HTML-full
+
+published : true
+
+
