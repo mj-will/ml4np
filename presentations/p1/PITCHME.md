@@ -22,7 +22,7 @@ This allows for more complex networks to be developed in Python, but they can be
 
 ### Initial tests
 
-![fig1](../../figures/comp1.eps)
+![fig1](../../figures/rejBvsS.png)
 
 ---
 
