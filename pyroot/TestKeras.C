@@ -79,12 +79,16 @@ void TestKeras()
    reader->AddVariable( "PimP", &PimP );
    reader->AddVariable( "PimTh", &PimTh );
    reader->AddVariable( "PimPhi", &PimPhi);
+<<<<<<< HEAD
 
 
    //reader->BookMVA("BDT", TString("dataset/weights/TMVAClassification_BDTB.weights.xml"));
+=======
+
+>>>>>>> 7a54c55fe8b986b8fcc5b738395815f7e060a660
 
    reader->BookMVA("PyKeras-0", TString("dataset/weights/TMVAClassification_PyKeras-0.weights.xml"));
 
-   
+  outputFile->Close();
 
 }

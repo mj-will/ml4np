@@ -81,8 +81,16 @@ include = [b.GetName() for b in branches if b.GetName() not in exclude]
 # number of variables for output layer
 Nvar = len(include)
 # loop over branches
+<<<<<<< HEAD
 for b in include:
     dataloader.AddVariable(b)
+=======
+for branch in signal.GetListOfBranches():
+    if branch.GetName() in include:
+        dataloader.AddVariable(branch.GetName())
+        print(branch.GetName())
+
+>>>>>>> 7a54c55fe8b986b8fcc5b738395815f7e060a660
 
 dataloader.AddSignalTree(signal, 1.0)
 dataloader.AddBackgroundTree(background, 1.0)
