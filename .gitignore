@@ -106,9 +106,9 @@ venv.bak/
 # ignore directories
 data/
 tutorials/
-dataset/
+dataset*/
 papers/
-models/
+models*/
 
 # root files
 *.root
