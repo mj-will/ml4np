@@ -24,14 +24,18 @@ void TestKeras()
     TMVA::Tools::Instance();
     TMVA::PyMethodBase::PyInitialize();
 
+    // methods to use
+    std::map<std::string,int> Methods;
+    Methods["BDT"]                = 1;
+
     // Create reader object
     TMVA::Reader *reader = new TMVA::Reader( "!Color:!Silent" );
 
     // Load data
      TFile *inputSignal(0);
      TFile *inputBackground(0);
-     TString fnameSignal = "../data/rho10_tm1_sm1_stat/Signal.root";
-     TString fnameBackground = "../data/rho10_tm1_sm1_stat/Background.root";
+     TString fnameSignal = "../data/tmva3/Signal2Pi.root";
+     TString fnameBackground = "../data/tmva3/BG2Pi.root";
      if (!gSystem->AccessPathName( fnameSignal )) {
          inputSignal = TFile::Open( fnameSignal ); // check if file in local directory exists
      }
@@ -55,14 +59,15 @@ void TestKeras()
      TTree *signalTree     = (TTree*)inputSignal->Get("HSParticles");
      TTree *background     = (TTree*)inputBackground->Get("HSParticles");
 
-     // Create a ROOT output file
-     TString outfileName("TMVAKeras.root");
-     TFile* outputFile = TFile::Open( outfileName, "RECREATE" );
 
 // TODO: create loop with TTreeReader
 // TODO: fix order of variables
+   
 
-   Float_t ElTime, ElP, ElTh, ElPhi, PTime, PP, PTh, PPhi, PimTime, PimP, PimTh, PimPhi, PipTime, PipP, PipTh, PipPhi;
+   Float_t NPerm, NDet, ElTime, ElP, ElTh, ElPhi, PTime, PP, PTh, PPhi, PimTime, PimP, PimTh, PimPhi, PipTime, PipP, PipTh, PipPhi, PDet, PipDet, PimDet;
+
+   reader->AddVariable( "NPerm", &NPerm);
+   reader->AddVariable( "NDet", &NDet);
    reader->AddVariable( "ElTime", &ElTime);
    reader->AddVariable( "ElP", &ElP );
    reader->AddVariable( "ElTh", &ElTh );
@@ -71,20 +76,41 @@ void TestKeras()
    reader->AddVariable( "PP", &PP );
    reader->AddVariable( "PTh", &PTh );
    reader->AddVariable( "PPhi", &PPhi);
+   reader->AddVariable( "PDet", &PDet);
    reader->AddVariable( "PipTime", &PipTime);
    reader->AddVariable( "PipP", &PipP );
    reader->AddVariable( "PipTh", &PipTh );
    reader->AddVariable( "PipPhi", &PipPhi);
+   reader->AddVariable( "PipDet", &PipDet);
    reader->AddVariable( "PimTime", &PimTime);
    reader->AddVariable( "PimP", &PimP );
    reader->AddVariable( "PimTh", &PimTh );
    reader->AddVariable( "PimPhi", &PimPhi);
+   reader->AddVariable( "PimDet", &PimDet);
+
+   // Book methods
+
+   reader->BookMVA("BDT", TString("datasetBkg0/weights/TMVAMultiBkg0_BDT-Bkg0.weights.xml"));
+
+   //reader->BookMVA("PyKeras-Bkg0", TString("datasetBkg0/weights/TMVAMultiBkg0_PyKeras-Bkg0.weights.xml "));
+
+    // Book output hists
+    UInt_t nbin = 100;
+    std::map<std::string,TH1*> hist;
+
+    if (Methods["BDT"])      hist["BDT"]     = new TH1F( "MVA_BDT",   "MVA_BDT"     , nbin, -0.8 ,0.8);
+
+    // Return MVA outputs and fill hsits
+    if (Methods["BDT"])      histBd     ->Fill( reader->EvaluateMVA("BDT"));
+
+    // Write histograms
+    TString outfileName("TMVAKeras.root");
+    TFile *outputFile  = new TFile( outfileName, "RECREATE" );
+
+    if (Methods["BDT"])      histBdt      ->Write();
+
+    outputFile->Close();
 
 
-   reader->BookMVA("BDT", TString("dataset/weights/TMVAClassification_BDTB.weights.xml"));
-
-   reader->BookMVA("PyKeras-0", TString("dataset/weights/TMVAClassification_PyKeras-0.weights.xml"));
-
-  outputFile->Close();
 
 }
