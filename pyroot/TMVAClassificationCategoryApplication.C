@@ -44,10 +44,10 @@ void TMVAClassificationCategoryApplication()
    // ---------------------------------------------------------------
    // default MVA methods to be trained + tested
    std::map<std::string,int> Use;
-   /
+   //
    Use["LikelihoodCat"] = 0;
    Use["FisherCat"]     = 0;
-   Use["BDT"]           = 0;
+   Use["BDT"]           = 1;
    Use["BDT1"]          = 0;
    Use["PyKeras"]       = 1;
    // ---------------------------------------------------------------
@@ -55,15 +55,71 @@ void TMVAClassificationCategoryApplication()
    std::cout << std::endl
              << "==> Start TMVAClassificationCategoryApplication" << std::endl;
 
+   // Prepare input tree (this must be replaced by your data source)
+   // in this example, there is a toy tree with signal and one with background events
+   // we'll later on use only the "signal" events for the test in this example.
+   //
+   TString fname = "../data/tmva3/Data2Pi.root";
+   std::cout << "--- TMVAClassificationApp    : Accessing " << fname << "!" << std::endl;
+   TFile *input = TFile::Open(fname);
+   if (!input) {
+      std::cout << "ERROR: could not open data file: " << fname << std::endl;
+      exit(1);
+   }
+   // Prepare the tree
+   // - here the variable names have to corresponds to your tree
+   // - you can use the same variables as above which is slightly faster,
+   //   but of course you can use different ones and copy the values inside the event loop
+   //
+   TTree* theTree0 = (TTree*)input->Get("HSParticles");
+
+   gROOT->cd();
+   // Choose sample type
+    TTree* theTree = theTree0->CopyTree("Detector==0&&PipTime!=0&&PimTime!=0&&PTime!=0");
+   //TTree* theTree = theTree0->CopyTree("Correct==0&&Detector==0&&PipTime!=0&&PimTime!=0&&PTime!=0");
+   //
+   // Try manually setting branches
+  
+   // declare varibles
+   Float_t NPerm, NDet, ElTime, ElP, ElTh, ElPhi, PTime, PP, PTh;
+   Float_t PPhi, PimTime, PimP, PimTh, PimPhi, PipTime, PipP;
+   Float_t PipTh, PipPhi, PDet, PipDet, PimDet;
+   // ints for tree
+   Int_t iNPerm, iNDet, iPDet, iPimDet, iPipDet;
+
+   // General variables
+   theTree->SetBranchAddress( "NPerm",   &iNPerm);
+   theTree->SetBranchAddress( "NDet",    &iNDet);
+   // Electron
+   theTree->SetBranchAddress( "ElTime",  &ElTime);
+   theTree->SetBranchAddress( "ElP",     &ElP);
+   theTree->SetBranchAddress( "ElTh",    &ElTh);
+   theTree->SetBranchAddress( "ElPhi",   &ElPhi);
+   // Proton
+   theTree->SetBranchAddress( "PTime",   &PTime);
+   theTree->SetBranchAddress( "PP",      &PP);
+   theTree->SetBranchAddress( "PTh",     &PTh);
+   theTree->SetBranchAddress( "PPhi",    &PPhi);
+   theTree->SetBranchAddress( "PDet",    &iPDet);
+   // Pi +
+   theTree->SetBranchAddress( "PipTime", &PipTime);
+   theTree->SetBranchAddress( "PipP",    &PipP);
+   theTree->SetBranchAddress( "PipTh",   &PipTh);
+   theTree->SetBranchAddress( "PipPhi",  &PipPhi);
+   theTree->SetBranchAddress( "PipDet",  &iPipDet);
+   // Pi - 
+   theTree->SetBranchAddress( "PimTime", &PimTime);
+   theTree->SetBranchAddress( "PimP",    &PimP);
+   theTree->SetBranchAddress( "PimTh",   &PimTh);
+   theTree->SetBranchAddress( "PimPhi",  &PimPhi);
+   theTree->SetBranchAddress( "PimDet",  &iPimDet);
+
+   // loop!
    //  Create the Reader object
 
    TMVA::Reader *reader = new TMVA::Reader( "!Color:!Silent" );
 
-   // Create a set of variables and spectators and declare them to the reader
    // - the variable names MUST corresponds in name and type to those given in the weight file(s) used
-   Float_t NPerm, NDet, ElTime, ElP, ElTh, ElPhi, PTime, PP, PTh;
-   Float_t PPhi, PimTime, PimP, PimTh, PimPhi, PipTime, PipP;
-   Float_t PipTh, PipPhi, PDet, PipDet, PimDet;
    // General variables
    reader->AddVariable( "NPerm",   &NPerm);
    reader->AddVariable( "NDet",    &NDet);
@@ -120,6 +176,9 @@ void TMVAClassificationCategoryApplication()
    //reader->AddVariable( "PimPhi",  &PimPhi,   'F');
    // Book the MVA methods
 
+
+   // Book methods
+
    for (std::map<std::string,int>::iterator it = Use.begin(); it != Use.end(); it++) {
       if (it->second) {
          TString methodName = it->first + " method";
@@ -134,33 +193,10 @@ void TMVAClassificationCategoryApplication()
    hist["LikelihoodCat"] = new TH1F( "MVA_LikelihoodCat",   "MVA_LikelihoodCat", nbin, -1, 0.9999 );
    hist["FisherCat"]     = new TH1F( "MVA_FisherCat",       "MVA_FisherCat",     nbin, -4, 4 );
    hist["BDT"]           = new TH1F( "MVA_BDT",             "MVA_BDT"     ,      nbin, -0.8 ,0.8);
-   hist["PyKeras"]       = new TH1F( "MVA_PyKeras",         "MVA_Pykeras",       nbin, -1, 1);
+   hist["PyKeras"]       = new TH1F( "MVA_PyKeras",         "MVA_Pykeras",       nbin, -0.1, 1.1);
 
-   // Prepare input tree (this must be replaced by your data source)
-   // in this example, there is a toy tree with signal and one with background events
-   // we'll later on use only the "signal" events for the test in this example.
-   //
-   TString fname = "../data/tmva3/Signal2Pi.root";
-   std::cout << "--- TMVAClassificationApp    : Accessing " << fname << "!" << std::endl;
-   TFile *input = TFile::Open(fname);
-   if (!input) {
-      std::cout << "ERROR: could not open data file: " << fname << std::endl;
-      exit(1);
-   }
 
    // Event loop
-
-   // Prepare the tree
-   // - here the variable names have to corresponds to your tree
-   // - you can use the same variables as above which is slightly faster,
-   //   but of course you can use different ones and copy the values inside the event loop
-   //
-   TTree* theTree0 = (TTree*)input->Get("HSParticles");
-
-   gROOT->cd();
-   // Choose sample type
-    TTree* theTree = theTree0->CopyTree("Detector==0&&PipTime!=0&&PimTime!=0&&PTime!=0");
-   //TTree* theTree = theTree0->CopyTree("Correct==0&&Detector==0&&PipTime!=0&&PimTime!=0&&PTime!=0");
 
    std::cout << "--- Processing: " << theTree->GetEntries() << " events" << std::endl;
    TStopwatch sw;
@@ -177,7 +213,6 @@ void TMVAClassificationCategoryApplication()
          if (!it->second) continue;
          TString methodName = it->first + " method";
          hist[it->first]->Fill( reader->EvaluateMVA( methodName ) );
-         std::cout<< (reader->EvaluateMVA( methodName )) << std::endl;
       }
 
    }
