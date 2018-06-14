@@ -11,5 +11,3 @@ charts : true
 mathjax : TeX-AMS_HTML-full
 
 published : true
-
-fontsize : 0.6em

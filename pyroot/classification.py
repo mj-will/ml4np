@@ -20,6 +20,7 @@ import ROOT
 from ROOT import TMVA, TFile, TTree, TCut
 from subprocess import call
 from os.path import isfile, isdir
+from array import array
 
 # Setup TMVA
 TMVA.Tools.Instance()
@@ -28,11 +29,11 @@ TMVA.PyMethodBase.PyInitialize()
 # choose method
 methods = {}
 methods['BDT'] =     1
-methods['PyKeras'] = 0
+methods['PyKeras'] = 1
 
 
 
-output = TFile.Open('TMVABDT.root', 'UPDATE')
+output = TFile.Open('TMVATest.root', 'UPDATE')
 factory = TMVA.Factory('TMVAClassification', output,
         '!V:!Silent:Color:DrawProgressBar:Transformations=D,G:AnalysisType=Classification')
 
@@ -68,7 +69,7 @@ background = skim(background0)
 ROOT.gROOT.cd()
 
 # make data loader
-dataloader = TMVA.DataLoader('datasetBDT')
+dataloader = TMVA.DataLoader('datasetTest')
 
 # list of variables to exclude
 exclude = ['MissMass2', 'MissMass', 'NPerm' 'ElDet', 'Correct', 'UID', 'Topo', 'ElDeltaE', 'PDeltaE', 'PipDeltaE', 'PimDeltaE', 'ElTrChi2', 'PTrChi2', 'PipTrChi2', 'PimTrChi2', 'ElDet', 'Detector', 'ElEdep', 'PEdep', 'PipEdep', 'PimEdep', 'ElPreE', 'PPreE', 'PipPreE', 'PimPreE', 'ElVz', 'PVz', 'PipVz', 'PimVz']
@@ -82,11 +83,50 @@ Nvar = len(include)
 # loop over branches
 for b in include:
     dataloader.AddVariable(b)
+branches = {}
+for branch in signal.GetListOfBranches():
+    branchName = branch.GetName()
+    if branchName in include:
+        if branchName in ['NPerm', 'NDet']:
+            branches[branchName] = array('f', [0])
+            print(branchName)
+            #dataloader.AddVariable(branchName, branches[branchName])
+        else:
+            branches[branchName] = array('f', [-999])
+            print(branchName)
+            dataloader.AddVariable(branchName, branches[branchName])
+
+### General variables
+#dataloader.AddVariable( "NPerm",   &NPerm,    'F');
+#dataloader.AddVariable( "NDet",    &NDet,     'F');
+## Electron
+#dataloader.AddVariable( "ElTime",  &ElTime,   'F');
+#dataloader.AddVariable( "ElP",     &ElP,      'F');
+#dataloader.AddVariable( "ElTh",    &ElTh,     'F');
+#dataloader.AddVariable( "ElPhi",   &ElPhi,    'F');
+## Proton
+#dataloader.AddVariable( "PTime",   &PTime,    'F');
+#dataloader.AddVariable( "PP",      &PP,       'F');
+#dataloader.AddVariable( "PTh",     &PTh,      'F');
+#dataloader.AddVariable( "PPhi",    &PPhi,     'F');
+#dataloader.AddVariable( "PDet",    &PDet,     'F');
+## Pi +
+#dataloader.AddVariable( "PipTime", &PipTime,  'F');
+#dataloader.AddVariable( "PipP",    &PipP,     'F');
+#dataloader.AddVariable( "PipTh",   &PipTh,    'F');
+#dataloader.AddVariable( "PipPhi",  &PipPhi,   'F');
+#dataloader.AddVariable( "PipDet",  &PipDet,   'F');
+## Pi -
+#dataloader.AddVariable( "PimTime", &PimTime,  'F');
+#dataloader.AddVariable( "PimP",    &PimP,     'F');
+#dataloader.AddVariable( "PimTh",   &PimTh,    'F');
+#dataloader.AddVariable( "PimPhi",  &PimPhi,   'F');
+
 
 dataloader.AddSignalTree(signal, 1.0)
 dataloader.AddBackgroundTree(background, 1.0)
 dataloader.PrepareTrainingAndTestTree(TCut(''),
-        'nTrain_Signal=0:nTrain_Background=0:SplitMode=Random:NormMode=NumEvents:!V')
+        'nTrain_Signal=4000:nTrain_Background=4000:SplitMode=Random:NormMode=NumEvents:!V')
 
 if methods['PyKeras']:
     # sav file in given location
@@ -95,7 +135,7 @@ if methods['PyKeras']:
 
     while isfile('{0}model{1}.h5'.format(model_path, i)):
         i += 1
-    name = 'PyKeras-{0}'.format(i)
+    name = 'PyKeras'#'PyKeras}'.format(i)
     # Generate model
 
     # Define model
@@ -140,10 +180,10 @@ if methods['BDT']:
 
     # checl BDTs used so far
     BDTcount = 0
-    while isfile('./datasetBDT/weights/TMVAClassification_BDT{0}.class.C'.format(BDTcount)):
+    while isfile('./datasetTest/weights/TMVAClassification_BDT{0}.class.C'.format(BDTcount)):
         BDTcount += 1
 
-    factory.BookMethod(dataloader, TMVA.Types.kBDT, 'BDT{0}'.format(BDTcount),"!H:!V:NTrees=1700:MinNodeSize=2.5%:MaxDepth=5:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20")
+    factory.BookMethod(dataloader, TMVA.Types.kBDT, 'BDT',"!H:!V:NTrees=1700:MinNodeSize=2.5%:MaxDepth=5:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20")
 
 
 factory.TrainAllMethods()

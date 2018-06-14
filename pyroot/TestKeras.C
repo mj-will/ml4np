@@ -27,6 +27,7 @@ void TestKeras()
     // methods to use
     std::map<std::string,int> Methods;
     Methods["BDT"]                = 1;
+    Methods["PyKeras"]            = 1;
 
     // Create reader object
     TMVA::Reader *reader = new TMVA::Reader( "!Color:!Silent" );
@@ -92,7 +93,7 @@ void TestKeras()
 
    reader->BookMVA("BDT", TString("datasetBkg0/weights/TMVAMultiBkg0_BDT-Bkg0.weights.xml"));
 
-   //reader->BookMVA("PyKeras-Bkg0", TString("datasetBkg0/weights/TMVAMultiBkg0_PyKeras-Bkg0.weights.xml "));
+   reader->BookMVA("PyKeras-Bkg0", TString("datasetBkg0/weights/TMVAMultiBkg0_PyKeras-Bkg0.weights.xml "));
 
     // Book output hists
     UInt_t nbin = 100;
