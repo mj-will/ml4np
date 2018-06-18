@@ -59,7 +59,7 @@ def skim(tree):
     Skim tree for nulls and infs
     """
     ROOT.gROOT.cd()
-    t = tree.CopyTree('Detector==0&&PipTime!=0&&PimTime!=0&&PTime!=0')
+    t = tree.CopyTree('Detector==0&&PipTime!=0&&PimTime!=0&&PTime!=0&&!TMath::IsNaN(PipDeltaE)&&!TMath::IsNaN(PimDeltaE)&&!TMath::IsNaN(ElDeltaE)&&!TMath::IsNaN(PDeltaE)')
     return t
 
 # remove nulls

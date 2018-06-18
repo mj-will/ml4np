@@ -1,0 +1,17 @@
+
+#include "TFile.h"
+
+void testhists()
+{
+    // Save hists from test results
+    // Author: Michael Williams
+    
+    // load .root file
+
+    TString fname = "TMVApp.root";
+    TFile *f = new TFile(fname, "READ");
+    f->ls();
+    // get pointer to TDirectoryFile
+    TDirectory* dir = gFile->GetDirectory("datasetTest"); dir->ls();
+
+}

@@ -25,6 +25,7 @@
 #include "TROOT.h"
 #include "TH1F.h"
 #include "TStopwatch.h"
+#include "TMath.h"
 
 #if not defined(__CINT__) || defined(__MAKECINT__)
 #include "TMVA/Tools.h"
@@ -47,9 +48,9 @@ void TMVAClassificationCategoryApplication()
    //
    Use["LikelihoodCat"] = 0;
    Use["FisherCat"]     = 0;
-   Use["BDT"]           = 1;
+   Use["BDT2"]           = 1;
    Use["BDT1"]          = 0;
-   Use["PyKeras"]       = 1;
+   Use["PyKeras1"]       = 1;
    // ---------------------------------------------------------------
 
    std::cout << std::endl
@@ -75,7 +76,9 @@ void TMVAClassificationCategoryApplication()
 
    gROOT->cd();
    // Choose sample type
-    TTree* theTree = theTree0->CopyTree("Detector==0&&PipTime!=0&&PimTime!=0&&PTime!=0");
+   // also remove NaNs
+    TTree* theTree = theTree0->CopyTree("Detector==0&&PipTime!=0&&PimTime!=0&&PTime!=0&&!TMath::IsNaN(PipDeltaE)&&!TMath::IsNaN(PimDeltaE)&&!TMath::IsNaN(ElDeltaE)&&!TMath::IsNaN(PDeltaE)");
+
    //TTree* theTree = theTree0->CopyTree("Correct==0&&Detector==0&&PipTime!=0&&PimTime!=0&&PTime!=0");
    //
    // Try manually setting branches
@@ -192,8 +195,8 @@ void TMVAClassificationCategoryApplication()
    std::map<std::string,TH1*> hist;
    hist["LikelihoodCat"] = new TH1F( "MVA_LikelihoodCat",   "MVA_LikelihoodCat", nbin, -1, 0.9999 );
    hist["FisherCat"]     = new TH1F( "MVA_FisherCat",       "MVA_FisherCat",     nbin, -4, 4 );
-   hist["BDT"]           = new TH1F( "MVA_BDT",             "MVA_BDT"     ,      nbin, -0.8 ,0.8);
-   hist["PyKeras"]       = new TH1F( "MVA_PyKeras",         "MVA_Pykeras",       nbin, -0.1, 1.1);
+   hist["BDT2"]           = new TH1F( "MVA_BDT",             "MVA_BDT"     ,      nbin, -0.8 ,0.8);
+   hist["PyKeras1"]       = new TH1F( "MVA_PyKeras",         "MVA_Pykeras",       nbin, -0.1, 1.1);
 
 
    // Event loop
