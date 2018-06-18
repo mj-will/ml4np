@@ -7,10 +7,6 @@ from os.path import isfile
 
 import numpy as np
 
-import matplotlib
-matplotlib.use('Agg')
-from matplotlib import pyplot as plt
-
 # Setup TMVA
 TMVA.Tools.Instance()
 TMVA.PyMethodBase.PyInitialize()
@@ -51,6 +47,8 @@ for branch in signal.GetListOfBranches():
 
 # Book methods
 reader.BookMVA('PyKeras', TString('datasetTest/weights/TMVAClassification_PyKeras.weights.xml'))
+reader.BookMVA('BDT', TString('datasetTest/weights/TMVAClassification_BDT.weights.xml'))
+
 
 # check results
 pred_signals = np.empty(1000,)
@@ -62,7 +60,6 @@ for i in range(1000):
     signal.GetEntry(i)
     p = reader.EvaluateMVA('PyKeras')
     pred_signals[i] = p
-    print(p)
 print('')
 
 print('Some background example classifications:')
@@ -70,11 +67,30 @@ for i in range(1000):
     background.GetEntry(i)
     p = reader.EvaluateMVA('PyKeras')
     pred_bkg[i] = p
-    print(p)
 
-# plots
-fig = plt.figure()
-plt.hist(pred_signals, 100, label = 'S')
-plt.hist(pred_bkg, 100, label = 'B')
-plt.legend()
-fig.savefig('hists.png')
+# save results
+np.save('./signals.npy', pred_signals)
+np.save('./bkg.npy', pred_bkg)
+
+# check results -BDT
+pred_signals = np.empty(1000,)
+pred_bkg = np.empty(1000,)
+
+# Print some example classifications
+print('Some signal example classifications:')
+for i in range(1000):
+    signal.GetEntry(i)
+    p = reader.EvaluateMVA('BDT')
+    pred_signals[i] = p
+print('')
+
+print('Some background example classifications:')
+for i in range(1000):
+    background.GetEntry(i)
+    p = reader.EvaluateMVA('BDT')
+    pred_bkg[i] = p
+
+# save results
+np.save('./signals_BDT.npy', pred_signals)
+np.save('./bkg_BDT.npy', pred_bkg)
+

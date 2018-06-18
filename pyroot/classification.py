@@ -83,18 +83,18 @@ Nvar = len(include)
 # loop over branches
 for b in include:
     dataloader.AddVariable(b)
-branches = {}
-for branch in signal.GetListOfBranches():
-    branchName = branch.GetName()
-    if branchName in include:
-        if branchName in ['NPerm', 'NDet']:
-            branches[branchName] = array('f', [0])
-            print(branchName)
-            #dataloader.AddVariable(branchName, branches[branchName])
-        else:
-            branches[branchName] = array('f', [-999])
-            print(branchName)
-            dataloader.AddVariable(branchName, branches[branchName])
+#branches = {}
+#for branch in signal.GetListOfBranches():
+#    branchName = branch.GetName()
+#    if branchName in include:
+#        if branchName in ['NPerm', 'NDet']:
+#            #branches[branchName] = array('f', [0])
+#            print(branchName)
+#            #dataloader.AddVariable(branchName, branches[branchName])
+#        else:
+#            branches[branchName] = array('f', [-999])
+#            print(branchName)
+#            dataloader.AddVariable(branchName, branches[branchName])
 
 ### General variables
 #dataloader.AddVariable( "NPerm",   &NPerm,    'F');
@@ -121,21 +121,21 @@ for branch in signal.GetListOfBranches():
 #dataloader.AddVariable( "PimP",    &PimP,     'F');
 #dataloader.AddVariable( "PimTh",   &PimTh,    'F');
 #dataloader.AddVariable( "PimPhi",  &PimPhi,   'F');
-
+#
 
 dataloader.AddSignalTree(signal, 1.0)
 dataloader.AddBackgroundTree(background, 1.0)
 dataloader.PrepareTrainingAndTestTree(TCut(''),
-        'nTrain_Signal=4000:nTrain_Background=4000:SplitMode=Random:NormMode=NumEvents:!V')
+        'nTrain_Signal=20000:nTrain_Background=20000:SplitMode=Random:NormMode=NumEvents:!V')
 
 if methods['PyKeras']:
     # sav file in given location
     i = 0
-    model_path = './models/'
+    model_path = './testmodels/'
 
     while isfile('{0}model{1}.h5'.format(model_path, i)):
         i += 1
-    name = 'PyKeras'#'PyKeras}'.format(i)
+    name = 'PyKeras{}'.format(i)
     # Generate model
 
     # Define model
@@ -153,16 +153,16 @@ if methods['PyKeras']:
     """
     # SNN model
     model = Sequential()
-    model.add(Dense(2048,input_dim=Nvar,
+    model.add(Dense(1024,input_dim=Nvar,
         kernel_initializer=initializers.lecun_uniform(),
         bias_initializer=initializers.lecun_uniform()))
     model.add(Activation('selu'))
-    model.add(AlphaDropout(0.5))
-    model.add(Dense(1024,
+    model.add(AlphaDropout(0.2))
+    model.add(Dense(512,
         kernel_initializer=initializers.lecun_uniform(),
         bias_initializer=initializers.lecun_uniform()))
     model.add(Activation('selu'))
-    model.add(AlphaDropout(0.5))
+    model.add(AlphaDropout(0.2))
     model.add(Dense(2, activation='softmax'))
 
     # Set loss and optimizer
@@ -183,7 +183,7 @@ if methods['BDT']:
     while isfile('./datasetTest/weights/TMVAClassification_BDT{0}.class.C'.format(BDTcount)):
         BDTcount += 1
 
-    factory.BookMethod(dataloader, TMVA.Types.kBDT, 'BDT',"!H:!V:NTrees=1700:MinNodeSize=2.5%:MaxDepth=5:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20")
+    factory.BookMethod(dataloader, TMVA.Types.kBDT, 'BDT{}'.format(BDTcount),"!H:!V:NTrees=1700:MinNodeSize=2.5%:MaxDepth=4:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20")
 
 
 factory.TrainAllMethods()
