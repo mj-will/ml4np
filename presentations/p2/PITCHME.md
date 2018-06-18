@@ -14,16 +14,6 @@ Goals from last week:
   - Dummy Variables
 - Standard way to deal with 2 backgrounds in TMVA is to train 2 classifiers - done
 
-
----
-
-### Application
-
-Looked into application using reader class that would be used on event by event basis
-
-Having problems with pretrained classifier output
-- Constant value?
-
 ---
 
 ### Neural Networks
@@ -41,8 +31,14 @@ Both methods benefit from more data, large improvement from 8K to 20K
 
 ---
 
-### Initial tests
+### Application
 
-![fig1](https://raw.githubusercontent.com/mj-will/ml4np/master/figures/rejBvsS.png)
+Looked into application using reader class that would be used on event by event basis
+
+![method_comparison](https://github.com/mj-will/ml4np/blob/master/figures/comp/rejBvsS.png?raw=true)
+
+---
+
+![BDThist](https://github.com/mj-will/ml4np/blob/master/figures/histBDT.png?raw=true) ![PKhist](https://github.com/mj-will/ml4np/blob/master/figures/histPyKeras.png?raw=true)
 
 ---
