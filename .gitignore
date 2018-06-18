@@ -108,13 +108,19 @@ data/
 tutorials/
 dataset*/
 papers/
-models*/
+*models*/
 
 # root files
 *.root
+# figures not in figures dir
+pyroot/*.png
+pyroot/*.pdf
+root/*.pdf
 
 # models
 model.*
+# data
+*.npy
 
 # PITCHME
 PITCHME/
