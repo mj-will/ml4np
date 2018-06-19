@@ -48,9 +48,9 @@ void TMVAClassificationCategoryApplication()
    //
    Use["LikelihoodCat"] = 0;
    Use["FisherCat"]     = 0;
-   Use["BDT2"]           = 1;
+   Use["BDT2"]          = 1;
    Use["BDT1"]          = 0;
-   Use["PyKeras1"]       = 1;
+   Use["PyKeras2"]      = 1;
    // ---------------------------------------------------------------
 
    std::cout << std::endl
@@ -88,9 +88,10 @@ void TMVAClassificationCategoryApplication()
    Float_t PPhi, PimTime, PimP, PimTh, PimPhi, PipTime, PipP;
    Float_t PipTh, PipPhi, PDet, PipDet, PimDet;
    // ints for tree
-   Int_t iNPerm, iNDet, iPDet, iPimDet, iPipDet;
+   Int_t iNPerm, iNDet, iPDet, iPimDet, iPipDet, Correct;
 
    // General variables
+   theTree->SetBranchAddress( "Correct", &Correct);
    theTree->SetBranchAddress( "NPerm",   &iNPerm);
    theTree->SetBranchAddress( "NDet",    &iNDet);
    // Electron
@@ -150,35 +151,7 @@ void TMVAClassificationCategoryApplication()
    reader->AddVariable( "PimPhi",  &PimPhi);
    reader->AddVariable( "PimDet",  &PimDet);
 
-   // loop!
-   
-   // General variables
-   //reader->AddVariable( "NPerm",   &NPerm,    'F');
-   //reader->AddVariable( "NDet",    &NDet,     'F');
-   // Electron
-   //reader->AddVariable( "ElTime",  &ElTime,   'F');
-   //reader->AddVariable( "ElP",     &ElP,      'F');
-   //reader->AddVariable( "ElTh",    &ElTh,     'F');
-   //reader->AddVariable( "ElPhi",   &ElPhi,    'F');
-   // Proton
-   //reader->AddVariable( "PTime",   &PTime,    'F');
-   //reader->AddVariable( "PP",      &PP,       'F');
-   //reader->AddVariable( "PTh",     &PTh,      'F');
-   //reader->AddVariable( "PPhi",    &PPhi,     'F');
-   //reader->AddVariable( "PDet",    &PDet,     'F');
-   // Pi +
-   //reader->AddVariable( "PipTime", &PipTime,  'F');
-   //reader->AddVariable( "PipP",    &PipP,     'F');
-   //reader->AddVariable( "PipTh",   &PipTh,    'F');
-   //reader->AddVariable( "PipPhi",  &PipPhi,   'F');
-   //reader->AddVariable( "PipDet",  &PipDet,   'F');
-   // Pi - 
-   //reader->AddVariable( "PimTime", &PimTime,  'F');
-   //reader->AddVariable( "PimP",    &PimP,     'F');
-   //reader->AddVariable( "PimTh",   &PimTh,    'F');
-   //reader->AddVariable( "PimPhi",  &PimPhi,   'F');
    // Book the MVA methods
-
 
    // Book methods
 
@@ -196,7 +169,7 @@ void TMVAClassificationCategoryApplication()
    hist["LikelihoodCat"] = new TH1F( "MVA_LikelihoodCat",   "MVA_LikelihoodCat", nbin, -1, 0.9999 );
    hist["FisherCat"]     = new TH1F( "MVA_FisherCat",       "MVA_FisherCat",     nbin, -4, 4 );
    hist["BDT2"]           = new TH1F( "MVA_BDT",             "MVA_BDT"     ,      nbin, -0.8 ,0.8);
-   hist["PyKeras1"]       = new TH1F( "MVA_PyKeras",         "MVA_Pykeras",       nbin, -0.1, 1.1);
+   hist["PyKeras2"]       = new TH1F( "MVA_PyKeras",         "MVA_Pykeras",       nbin, -0.1, 1.1);
 
 
    // Event loop
@@ -204,23 +177,52 @@ void TMVAClassificationCategoryApplication()
    std::cout << "--- Processing: " << theTree->GetEntries() << " events" << std::endl;
    TStopwatch sw;
    sw.Start();
-   for (Long64_t ievt=0; ievt<theTree->GetEntries();ievt++) {
 
+   double pBDT;
+   double pPyKeras;
+   int    eventclass;
+
+   // File for results tree
+   TFile *resultsFile = TFile::Open("results.root", "RECREATE");
+
+   // Write TTree with results
+   TTree *resultsTree = new TTree("resultsTree", "Tree with results");
+
+   resultsTree->Branch("pBDT", &pBDT);
+   resultsTree->Branch("pPyKeras", &pPyKeras);
+   resultsTree->Branch("class", &eventclass);
+
+   // for (Long64_t ievt=0; ievt<theTree->GetEntries();ievt++) {
+
+   std::map<std::string,double> p;
+
+   for (Long64_t ievt=0; ievt <theTree->GetEntries(); ievt++) {
       if (ievt%1000 == 0) std::cout << "--- ... Processing event: " << ievt << std::endl;
 
       theTree->GetEntry(ievt);
 
-      // Return the MVA outputs and fill into histograms
+      // save event class
+      eventclass = Correct;
 
+      // Return the MVA outputs and fill into histograms
+      
       for (std::map<std::string,int>::iterator it = Use.begin(); it != Use.end(); it++) {
          if (!it->second) continue;
          TString methodName = it->first + " method";
          hist[it->first]->Fill( reader->EvaluateMVA( methodName ) );
+         double r;
+         p[it->first] = reader->EvaluateMVA( (methodName) );
       }
-
+      pBDT = p["BDT2"];
+      pPyKeras = p["PyKeras2"];
+      //std::cout<<pBDT;
+      resultsTree->Fill();
    }
    sw.Stop();
    std::cout << "--- End of event loop: "; sw.Print();
+
+   // Fill tree
+   resultsFile->Write();
 
    // Write histograms
 

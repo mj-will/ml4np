@@ -32,27 +32,14 @@ methods['BDT'] =     1
 methods['PyKeras'] = 1
 
 
+output_name = 'Det1.root'
 
-output = TFile.Open('TMVATest.root', 'UPDATE')
+output = TFile.Open(output_name, 'RECREATE')
 factory = TMVA.Factory('TMVAClassification', output,
-        '!V:!Silent:Color:DrawProgressBar:Transformations=D,G:AnalysisType=Classification')
+        '!V:!Silent:Color:DrawProgressBar:Transformations=G:AnalysisType=Classification')
 
-fnameSignal = '../data/tmva3/Signal2Pi.root'
-fnameBackground = '../data/tmva3/BG2Pi.root'
-
-# Load data
-if not isfile(fnameSignal):
-    print('File not found: {0}'.format(fnameSignal))
-if not isfile(fnameBackground):
-    print('File not found: {0}'.format(fnameBackground))
-
-dataSignal = TFile.Open(fnameSignal)
-dataBackground = TFile.Open(fnameBackground)
-
-
-signal0 = dataSignal.Get('HSParticles')
-background0 = dataBackground.Get('HSParticles')
-
+use_data = True
+detector = 1
 
 def skim(tree):
     """
@@ -62,17 +49,65 @@ def skim(tree):
     t = tree.CopyTree('Detector==0&&PipTime!=0&&PimTime!=0&&PTime!=0&&!TMath::IsNaN(PipDeltaE)&&!TMath::IsNaN(PimDeltaE)&&!TMath::IsNaN(ElDeltaE)&&!TMath::IsNaN(PDeltaE)')
     return t
 
-# remove nulls
-signal = skim(signal0)
-background = skim(background0)
 
-ROOT.gROOT.cd()
+def split(tree):
+        """
+        Split tree into signals. Also remove possible nulls
+        """
+
+        ROOT.gROOT.cd()
+        # create copys
+        signalTree = skim(tree.CopyTree('Correct==1'))
+        backgroundTree = skim(tree.CopyTree('Correct==0'))
+
+        return signalTree, backgroundTree
+
+
+if use_data:
+    fnameData = '../data/tmva3/Data2Pi_{0}.root'.format(detector)
+
+    if not isfile(fnameData):
+        print('File not found: {0}'.format(fnameData))
+
+    data = TFile.Open(fnameData)
+    dataTree = data.Get('D{0}Tree'.format(detector))
+
+    signal, background = split(dataTree)
+
+
+else:
+
+    fnameSignal = '../data/tmva3/Signal2Pi.root'
+    fnameBackground = '../data/tmva3/BG2Pi.root'
+
+    # Load data
+    if not isfile(fnameSignal):
+        print('File not found: {0}'.format(fnameSignal))
+    if not isfile(fnameBackground):
+        print('File not found: {0}'.format(fnameBackground))
+
+    dataSignal = TFile.Open(fnameSignal)
+    dataBackground = TFile.Open(fnameBackground)
+
+
+    signal0 = dataSignal.Get('HSParticles')
+    background0 = dataBackground.Get('HSParticles')
+
+
+
+    # remove nulls
+    signal = skim(signal0)
+    background = skim(background0)
+
+    ROOT.gROOT.cd()
 
 # make data loader
-dataloader = TMVA.DataLoader('datasetTest')
+dataloader = TMVA.DataLoader('datasetDet{0}'.format(detector))
 
 # list of variables to exclude
-exclude = ['MissMass2', 'MissMass', 'NPerm' 'ElDet', 'Correct', 'UID', 'Topo', 'ElDeltaE', 'PDeltaE', 'PipDeltaE', 'PimDeltaE', 'ElTrChi2', 'PTrChi2', 'PipTrChi2', 'PimTrChi2', 'ElDet', 'Detector', 'ElEdep', 'PEdep', 'PipEdep', 'PimEdep', 'ElPreE', 'PPreE', 'PipPreE', 'PimPreE', 'ElVz', 'PVz', 'PipVz', 'PimVz']
+#exclude = ['MissMass2', 'MissMass', 'NPerm' , 'Correct', 'UID', 'Topo', 'ElDeltaE', 'PDeltaE', 'PipDeltaE', 'PimDeltaE', 'ElTrChi2', 'PTrChi2', 'PipTrChi2', 'PimTrChi2', 'ElDet', 'Detector', 'ElEdep', 'PEdep', 'PipEdep', 'PimEdep', 'ElPreE', 'PPreE', 'PipPreE', 'PimPreE', 'ElVz', 'PVz', 'PipVz', 'PimVz']
+
+exclude = ['MissMass2', 'MissMass', 'UID']
 
 # list of variables to use
 branches = signal.GetListOfBranches()
@@ -126,7 +161,7 @@ for b in include:
 dataloader.AddSignalTree(signal, 1.0)
 dataloader.AddBackgroundTree(background, 1.0)
 dataloader.PrepareTrainingAndTestTree(TCut(''),
-        'nTrain_Signal=20000:nTrain_Background=20000:SplitMode=Random:NormMode=NumEvents:!V')
+        'nTrain_Signal=4000:nTrain_Background=4000:SplitMode=Random:NormMode=NumEvents:!V')
 
 if methods['PyKeras']:
     # sav file in given location
@@ -135,7 +170,7 @@ if methods['PyKeras']:
 
     while isfile('{0}model{1}.h5'.format(model_path, i)):
         i += 1
-    name = 'PyKeras{}'.format(i)
+    name = 'PyKeras'.format(i)
     # Generate model
 
     # Define model
@@ -169,8 +204,8 @@ if methods['PyKeras']:
     model.compile(loss='categorical_crossentropy', optimizer=Nadam(), metrics=['accuracy',])
 
     # Store model to file
-    model.save('{0}/model{1}.h5'.format(model_path, i))
-    model.save('./model.h5')
+    #model.save('{0}/model{1}.h5'.format(model_path, i))
+    model.save('./model-Det{0}.h5'.format(detector))
     model.summary()
 
     factory.BookMethod(dataloader, TMVA.Types.kPyKeras, name,        'H:!V:VarTransform=D,G:FilenameModel=model.h5:NumEpochs=40:BatchSize=32:TriesEarlyStopping=5')
@@ -180,10 +215,10 @@ if methods['BDT']:
 
     # checl BDTs used so far
     BDTcount = 0
-    while isfile('./datasetTest/weights/TMVAClassification_BDT{0}.class.C'.format(BDTcount)):
+    while isfile('./datasetTest/weights/TMVAClassification_BDT.class.C'.format(BDTcount)):
         BDTcount += 1
 
-    factory.BookMethod(dataloader, TMVA.Types.kBDT, 'BDT{}'.format(BDTcount),"!H:!V:NTrees=1700:MinNodeSize=2.5%:MaxDepth=4:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20")
+    factory.BookMethod(dataloader, TMVA.Types.kBDT, 'BDT'.format(BDTcount),"!H:!V:NTrees=1700:MinNodeSize=2.5%:MaxDepth=4:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20")
 
 
 factory.TrainAllMethods()

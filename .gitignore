@@ -109,6 +109,7 @@ tutorials/
 dataset*/
 papers/
 *models*/
+old/
 
 # root files
 *.root
@@ -116,11 +117,13 @@ papers/
 pyroot/*.png
 pyroot/*.pdf
 root/*.pdf
+detector_split/*.png
 
 # models
 model.*
 # data
 *.npy
+*.h5
 
 # PITCHME
 PITCHME/
