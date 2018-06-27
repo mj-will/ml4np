@@ -201,6 +201,14 @@ void TMVAClassificationCategoryApplication()
 
       theTree->GetEntry(ievt);
 
+      std::cout<<theTree->GetEntry(ievt)<<std::endl;
+      std::cout<<Correct<<std::endl;
+      std::cout<<NDet<<std::endl;
+
+      if (ievt == 1000) {
+          break;
+      }
+
       // save event class
       eventclass = Correct;
 
@@ -215,7 +223,7 @@ void TMVAClassificationCategoryApplication()
       }
       pBDT = p["BDT2"];
       pPyKeras = p["PyKeras2"];
-      //std::cout<<pBDT;
+      std::cout<<pBDT;
       resultsTree->Fill();
    }
    sw.Stop();

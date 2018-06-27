@@ -32,14 +32,13 @@ methods['BDT'] =     1
 methods['PyKeras'] = 1
 
 
-output_name = 'Det1.root'
+output_name = 'DetALL.root'
 
 output = TFile.Open(output_name, 'RECREATE')
 factory = TMVA.Factory('TMVAClassification', output,
         '!V:!Silent:Color:DrawProgressBar:Transformations=G:AnalysisType=Classification')
 
 use_data = True
-detector = 1
 
 def skim(tree):
     """
@@ -64,13 +63,13 @@ def split(tree):
 
 
 if use_data:
-    fnameData = '../data/tmva3/Data2Pi_{0}.root'.format(detector)
+    fnameData = '../data/tmva3/Data2Pi,root'.format(detector)
 
     if not isfile(fnameData):
         print('File not found: {0}'.format(fnameData))
 
     data = TFile.Open(fnameData)
-    dataTree = data.Get('D{0}Tree'.format(detector))
+    dataTree = data.Get('HSParticles'.format(detector))
 
     signal, background = split(dataTree)
 
@@ -102,7 +101,7 @@ else:
     ROOT.gROOT.cd()
 
 # make data loader
-dataloader = TMVA.DataLoader('datasetDet{0}'.format(detector))
+dataloader = TMVA.DataLoader('datasetDetALL'.format(detector))
 
 # list of variables to exclude
 #exclude = ['MissMass2', 'MissMass', 'NPerm' , 'Correct', 'UID', 'Topo', 'ElDeltaE', 'PDeltaE', 'PipDeltaE', 'PimDeltaE', 'ElTrChi2', 'PTrChi2', 'PipTrChi2', 'PimTrChi2', 'ElDet', 'Detector', 'ElEdep', 'PEdep', 'PipEdep', 'PimEdep', 'ElPreE', 'PPreE', 'PipPreE', 'PimPreE', 'ElVz', 'PVz', 'PipVz', 'PimVz']
