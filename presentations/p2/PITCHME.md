@@ -39,6 +39,10 @@ Looked into application using reader class that would be used on event by event 
 
 ---
 
-![BDThist](https://github.com/mj-will/ml4np/blob/master/figures/histBDT.png?raw=true) ![PKhist](https://github.com/mj-will/ml4np/blob/master/figures/histPyKeras.png?raw=true)
+![BDThist](https://github.com/mj-will/ml4np/blob/master/figures/histBDT.png?raw=true) 
+
+---
+
+![PKhist](https://github.com/mj-will/ml4np/blob/master/figures/hist.png?raw=true)
 
 ---
