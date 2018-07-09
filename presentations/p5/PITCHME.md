@@ -9,7 +9,7 @@ Goals from last week:
 
 ### Methods in R
 
-![p1](https://github.com/mj-will/ml4np/blob/master/topo_split/R-plot.png)
+![p1](https://github.com/mj-will/ml4np/blob/master/topo_split/R-plot.png?raw=true)
 
 ---
 
@@ -21,10 +21,10 @@ Goals from last week:
 
 ### Pythia data
 
-![p3](https://github.com/mj-will/ml4np/blob/master/topo_split/pythia-BDT.png)
+![p3](https://github.com/mj-will/ml4np/blob/master/topo_split/pythia-BDT.png?raw=true)
 
 ---
 
-![p4](https://github.com/mj-will/ml4np/blob/master/topo_split/pythia-MissMass2.png)
+![p4](https://github.com/mj-will/ml4np/blob/master/topo_split/pythia-MissMass2.png?raw=true)
 
 ---
