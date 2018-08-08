@@ -46,7 +46,7 @@ void ApplicationSingleBackground()
     // default MVA methods to be trained + tested
     std::map<std::string,int> Use;
     //
-    Use["PyKeras"]      = 0;
+    Use["PyKeras"]      = 1;
     Use["BDT"]          = 1;
     // ---------------------------------------------------------------
 
@@ -56,45 +56,68 @@ void ApplicationSingleBackground()
     std::cout<<"--- Loading data..."<<std::endl;
 
     // load data
-    TFile *input(0);
-    TString fname = "../data/tmva3/Data2Pi_clean.root";
-    input = TFile::Open( fname );
-    if (!input) {
-       std::cout << "ERROR: could not open data file" << std::endl;
-       exit(1);
+    //
+    TFile *inputAll(0);
+    TString fnameAll = "./tmpTree.root";
+    inputAll = TFile::Open( fnameAll );
+
+    TTree *theTree;
+
+    if (!inputAll) {
+
+        std::cout<<"    Did not find tree with combined backgrounds..."<<std::endl;
+        std::cout<<"    Writing combined tree... "<<std::endl;
+
+        TFile *input(0);
+        TString fname = "../data/tmva3/Data2Pi_clean.root";
+        input = TFile::Open( fname );
+        if (!input) {
+           std::cout << "ERROR: could not open data file" << std::endl;
+           exit(1);
+        }
+
+        std::cout<<"--- ..."<<std::endl;
+
+        TFile *inputBkg(0);
+        TString fnameBkg = "../data/tmva3/Data2K_clean.root";
+        inputBkg = TFile::Open( fnameBkg );
+        if (!inputBkg) {
+           std::cout << "ERROR: could not open data file" << std::endl;
+           exit(1);
+        }
+        std::cout << "--- TMVAClassification       : Using input file: " << input->GetName() << std::endl;
+        std::cout << "--- TMVAClassification       : Using input background file: " << inputBkg->GetName() << std::endl;
+
+        std::cout<<"--- Get ROOT Trees..."<<std::endl;
+
+        // get input tree
+        TString treeName = "HSParticles";
+        TTree *inputTree = (TTree*)input->Get(treeName);
+        gROOT->cd();
+        TTree *signalTree = inputTree->CopyTree("Correct==1");
+        gROOT->cd();
+        TTree *backgroundTree = inputTree->CopyTree("Correct==0");
+
+        // load second background
+        TTree *backgroundTreeK = (TTree*)inputBkg->Get(treeName);
+
+        TList *list = new TList;
+        list->Add(inputTree);
+        //list->Add(signalTree);
+        //list->Add(backgroundTree);
+        list->Add(backgroundTreeK);
+
+        TFile *tmp = TFile::Open("tmpTree.root", "RECREATE");
+        theTree = TTree::MergeTrees(list); theTree->SetName("HSParticles"); theTree->Write();
+
     }
 
-    std::cout<<"--- ..."<<std::endl;
+    else {
+        std::cout<<"    Found combined tree..."<<std::endl;
+        TString treeName = "HSParticles";
+        theTree = (TTree*)inputAll->Get(treeName);
 
-    TFile *inputBkg(0);
-    TString fnameBkg = "../data/tmva3/Data2K_clean.root";
-    inputBkg = TFile::Open( fnameBkg );
-    if (!inputBkg) {
-       std::cout << "ERROR: could not open data file" << std::endl;
-       exit(1);
     }
-    std::cout << "--- TMVAClassification       : Using input file: " << input->GetName() << std::endl;
-    std::cout << "--- TMVAClassification       : Using input background file: " << inputBkg->GetName() << std::endl;
-
-    std::cout<<"--- Get ROOT Trees..."<<std::endl;
-
-    // get input tree
-    TString treeName = "HSParticles";
-    TTree *inputTree = (TTree*)input->Get(treeName);
-    gROOT->cd();
-    TTree *signalTree = inputTree->CopyTree("Correct==1");
-    gROOT->cd();
-    TTree *backgroundTree = inputTree->CopyTree("Correct==0");
-
-    // load second background
-    TTree *backgroundTreeK = (TTree*)inputBkg->Get(treeName);
-
-    TList *list = new TList;
-    list->Add(signalTree);
-    list->Add(backgroundTree);
-    list->Add(backgroundTreeK);
-    
-    TTree *theTree = TTree::MergeTrees(list); theTree->SetName("HSParticles");
 
     Int_t NPerm, NDet, Correct, Detector, Topo;
     Float_t fNPerm, fNDet, fDetector;
@@ -133,8 +156,8 @@ void ApplicationSingleBackground()
     
     TMVA::Reader *reader = new TMVA::Reader( "!Color:!Silent" );
 
-    reader->AddVariable("NPerm",   &fNPerm);
     reader->AddVariable("NDet",    &fNDet);
+    reader->AddVariable("NPerm",   &fNPerm);
     reader->AddVariable("Detector",&fDetector);
 
     // add most of the variables
@@ -155,7 +178,7 @@ void ApplicationSingleBackground()
     //
 
     // File for results tree
-    TFile *resultsFile = TFile::Open("resultsBkgComb.root", "RECREATE");
+    TFile *resultsFile = TFile::Open("resultsSingleBackground.root", "RECREATE");
  
     // Write TTree with results
     TTree *resultsTree = new TTree("resultsTree", "Tree with results");
@@ -201,7 +224,7 @@ void ApplicationSingleBackground()
  
        theTree->GetEntry(ievt);
  
-       if (ievt == 1000) {
+       if (ievt == 100000) {
            break;
        }
  

@@ -137,9 +137,9 @@ void ApplicationMultiBackground()
    Int_t                classID;
    resultsTree->Branch("classID", &classID);
 
-   TString              className;
-   //resultsTree->Branch("className", &className);
-   std::vector<TString> classNames =  {"Signals", "CBackground", "KBackground"}; // {0, 1, 2}
+   TObjString              className;
+   resultsTree->Branch("className", &className);
+   std::vector<TObjString> classNames =  {"Signals", "CBackground", "KBackground"}; // {0, 1, 2}
    std::vector<TString> branchNames = {};
    // vector to correct for ordering of data
    std::vector<Int_t> classCor = {1, 0, 2};
@@ -148,7 +148,7 @@ void ApplicationMultiBackground()
    for (std::map<std::string,int>::iterator it = Use.begin(); it != Use.end(); it++) {
        if (!it->second) continue;
        for (auto const& cn : classNames){
-           TString branchName = it->first + "_" + cn;
+           TString branchName = it->first + "_" + cn.GetString();
            branchNames.push_back(branchName);
        }
    }
@@ -171,7 +171,7 @@ void ApplicationMultiBackground()
       theTree->GetEntry(ievt);
 
       if (ievt == 1000) {
-          break;
+          //break;
       }
 
       // save event class

@@ -33,7 +33,7 @@ void Multi()
     TFile* outputFile = TFile::Open( outputFname, "RECREATE");
 
     TMVA::Factory *factory = new TMVA::Factory( "TMVAMulticlass", outputFile,
-                                                "!V:!Silent:Color:DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=multiclass");
+                                                "!V:!Silent:Color:DrawProgressBar:Transformations=I:AnalysisType=multiclass");
 
     TMVA::DataLoader *dataloader = new TMVA::DataLoader("datasetMulti");
 
@@ -98,14 +98,14 @@ void Multi()
     dataloader->AddTree(backgroundTree, "CBackground");
     dataloader->AddTree(backgroundTreeK, "KBackground");
 
-    dataloader->PrepareTrainingAndTestTree("","nTrain_Signals=20000:nTrain_CBackground=20000:nTrain_KBackground=20000:SplitMode=Random:NormMode=NumEvents:!V" );
+    dataloader->PrepareTrainingAndTestTree("","nTrain_Signals=50000:nTrain_CBackground=50000:nTrain_KBackground=50000:SplitMode=Random:NormMode=NumEvents:!V" );
 
     std::cout<<"--- Booking Methods..."<<std::endl;
 
     factory->BookMethod(dataloader, TMVA::Types::kBDT, "BDT","!H:!V:NTrees=1700:MinNodeSize=2.5%:MaxDepth=4:BoostType=Grad:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20");
 
     factory->BookMethod(dataloader, TMVA::Types::kPyKeras, "PyKeras",
-              "!H:!V:VarTransform=D,G:FilenameModel=model.h5:FilenameTrainedModel=trainedModel.h5:NumEpochs=10:BatchSize=32:SaveBestOnly=true:Verbose=1");
+              "!H:!V:VarTransform=D,G:FilenameModel=model.h5:FilenameTrainedModel=trainedModel.h5:NumEpochs=100:BatchSize=32:SaveBestOnly=true:Verbose=1");
 
     //factory->BookMethod( dataloader, TMVA::Types::kMLP, "MLPBNN", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:TrainingMethod=BFGS:UseRegulator:EstimatorType=sigmoid" ); // BFGS training with bayesian regulators
 
