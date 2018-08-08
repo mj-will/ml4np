@@ -9,15 +9,18 @@
 #include "TMVA/Factory.h"
 #include "TMVA/DataLoader.h"
 #include "TMVA/Tools.h"
-#include "TMVA/TMVAGui.h"
+#include<TMVA/MethodRXGB.h>
+
+
 
 void Classification ()
 {
     // Load library
     TMVA::Tools::Instance();
     TMVA::PyMethodBase::PyInitialize();
+    ROOT::R::TRInterface &r = ROOT::R::TRInterface::Instance();
 
-    vector<Int_t> Topos = {0, 1, 2, 3};
+    vector<Int_t> Topos = {0};
 
     for (auto const& topo: Topos) {
 
@@ -47,39 +50,97 @@ void Classification ()
         TFile *outputFile = TFile::Open(outputName, "RECREATE");
 
         TMVA::Factory *factory = new TMVA::Factory( "TMVAClassification", outputFile,
-                                               "!V:!Silent:Color:DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification" );
+                                               "!V:!Silent:Color:DrawProgressBar:Transformations=I:AnalysisType=Classification" );
 
         TMVA::DataLoader *dataloader=new TMVA::DataLoader("datasetTopo"+std::to_string(topo));
 
+        vector<TString> variableNames;
 
-        vector<TString> variableNames = { "NDet", "NPerm", "Detector"};
-        vector<TString> particleNames = {"El", "P","Pip","Pim"};
-        vector<TString> particleProperties = {"Time","Edep","DeltaE", "PreE", "P", "Th", "Phi", "Vz", "TrChi2"};
+        if (topo == 0) {
 
-        // Add (particleName + particleProperty) string to variableNames in all possible combinations
-        for(auto const& pn: particleNames) {
-            for(auto const& pp: particleProperties) {
-                variableNames.push_back(pn+pp);
+            // Set branches in loop
+            variableNames = {"NDet", "NPerm", "Detector"};
+            vector<TString> particleNames = {"El", "P","Pip","Pim"};
+            vector<TString> particleProperties = {"Time","Edep","DeltaE", "PreE", "P", "Th", "Phi", "Vz", "TrChi2", "Det"};
+
+            // Add (particleName + particleProperty) string to variableNames in all possible combinations
+            for(auto const& pn: particleNames) {
+                for(auto const& pp: particleProperties) {
+                    variableNames.push_back(pn+pp);
+                };
             };
-        };
+        } 
 
-        // Fill the tree
+        if (topo == 1) {
 
-        int nVars = variableNames.size();
-        std::vector<Float_t> vars( nVars);
-        Float_t treevars[nVars];
+            // Set variables names
+            variableNames = {"NDet", "NPerm", "Detector"};
+            vector<TString> particleNames = {"El", "P","Pip"};
+            vector<TString> particleProperties = {"Time","Edep","DeltaE", "PreE", "P", "Th", "Phi", "Vz", "TrChi2", "Det"};
 
-        for(UInt_t ivar = 0; ivar<nVars; ivar++) {
-            for(auto const& value: variableNames) {
-                dataloader->AddVariable( value, value, "units", 'F' );
-            }
-        }  
+            // Add (particleName + particleProperty) string to variableNames in all possible combinations
+            for(auto const& pn: particleNames) {
+                for(auto const& pp: particleProperties) {
+                    variableNames.push_back(pn+pp);
+                };
+            };
+
+        }
+    
+        if (topo == 2) {
+
+            // Set variables names
+            variableNames = {"NDet", "NPerm", "Detector"};
+            vector<TString> particleNames = {"El", "P","Pim"};
+            vector<TString> particleProperties = {"Time","Edep","DeltaE", "PreE", "P", "Th", "Phi", "Vz", "TrChi2"};
+
+            // Add (particleName + particleProperty) string to variableNames in all possible combinations
+            for(auto const& pn: particleNames) {
+                for(auto const& pp: particleProperties) {
+                    if (pn+pp == "PTime") {
+                        variableNames.push_back("ElDet");
+                        variableNames.push_back(pn+pp);
+                    }
+                    
+                    else if (pn+pp == "PimTime") {
+                        variableNames.push_back("PDet");
+                        variableNames.push_back(pn+pp);
+                    }
+                    else {
+                        variableNames.push_back(pn+pp);
+                    }
+                };
+            };
+        }
+
+        if (topo == 3) {
+            // Set variables names
+            variableNames = {"NDet", "NPerm", "Detector"};
+            vector<TString> particleNames = {"El", "Pip","Pim"};
+            vector<TString> particleProperties = {"Time","Edep","DeltaE", "PreE", "P", "Th", "Phi", "Vz", "TrChi2", "Det"};
+
+            // Add (particleName + particleProperty) string to variableNames in all possible combinations
+            for(auto const& pn: particleNames) {
+                for(auto const& pp: particleProperties) {
+                    variableNames.push_back(pn+pp);
+                };
+            };
+        }
+        
+        // add variables to reader
+        // need position of variables in original treevars vector
+        for (auto const& vn: variableNames) {
+            dataloader->AddVariable( vn, vn, "units", 'F');
+        } 
+
         dataloader->AddSignalTree(signalTree, 1.0);
         dataloader->AddBackgroundTree(backgroundTree, 1.0);
 
-        dataloader->PrepareTrainingAndTestTree((TCut("")),"nTrain_Signal=5001:nTrain_Background=5000:SplitMode=Random:NormMode=NumEvents:!V" );
+        dataloader->PrepareTrainingAndTestTree((TCut("")),"nTrain_Signal=10000:nTrain_Background=10000:SplitMode=Random:NormMode=NumEvents:!V" );
 
         factory->BookMethod(dataloader, TMVA::Types::kBDT, "BDT","!H:!V:NTrees=1700:MinNodeSize=2.5%:MaxDepth=4:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20");
+
+        factory->BookMethod(dataloader,TMVA::Types::kRXGB, "RXGB", "!V:NRounds=160:MaxDepth=3:Eta=1");
 
         factory->TrainAllMethods();
         factory->TestAllMethods();

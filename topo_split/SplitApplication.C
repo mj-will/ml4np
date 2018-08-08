@@ -48,6 +48,7 @@ void SplitApplication()
     //
     Use["PyKeras"]      = 0;
     Use["BDT"]          = 1;
+    Use["BDT0"]          = 0;
     // ---------------------------------------------------------------
 
     std::cout << std::endl
@@ -55,7 +56,8 @@ void SplitApplication()
 
 
     // Prepare input tree
-    TString fname = "../data/tmva3/Data2Pi_clean.root";
+    TString fname = "/home/mikew/git_repos/HASPECT6/Projects/tmva/SmartGenSplits.root";
+    //TString fname = "../data/tmva3/Data2Pi_clean.root";
     std::cout << "--- TMVAClassificationApp    : Accessing " << fname << "!" << std::endl;
     TFile *input = TFile::Open(fname);
     if (!input) {
@@ -63,11 +65,14 @@ void SplitApplication()
        exit(1);
     }
     // Prepare the tree;
-    TTree* theTree = (TTree*)input->Get("HSParticles");
+    TTree* theTree = (TTree*)input->Get("THSMVATree");
 
     Int_t NPerm, NDet, Correct, Detector, Topo;
     Float_t fNPerm, fNDet, fDetector;
+    Double_t MissMass, MissMass2;
     
+    theTree->SetBranchAddress("MissMass2",&MissMass2);
+    theTree->SetBranchAddress("MissMass",&MissMass);
     theTree->SetBranchAddress("Topo",    &Topo);
     theTree->SetBranchAddress("NPerm",   &NPerm);
     theTree->SetBranchAddress("NDet",    &NDet);
@@ -122,8 +127,8 @@ void SplitApplication()
                 };
             };
             // add remaining variables
-            readers[topo]->AddVariable("NPerm",   &fNPerm);
             readers[topo]->AddVariable("NDet",    &fNDet);
+            readers[topo]->AddVariable("NPerm",   &fNPerm);
             readers[topo]->AddVariable("Detector",&fDetector);
 
         
@@ -253,18 +258,27 @@ void SplitApplication()
     //
 
     // File for results tree
-    TFile *resultsFile = TFile::Open("resultsTopoComb.root", "RECREATE");
+    TFile *resultsFile =  new TFile("results_THSMVAData.root", "RECREATE");
  
     // Write TTree with results
     TTree *resultsTree = new TTree("resultsTree", "Tree with results");
+    resultsTree->SetName("resultsTree");
  
+    resultsTree->Branch("MissMass2",&MissMass2);
+    resultsTree->Branch("MissMass",&MissMass);
+    resultsTree->Branch("Topo",    &Topo);
+    resultsTree->Branch("NPerm",   &NPerm);
+    resultsTree->Branch("NDet",    &NDet);
+    resultsTree->Branch("Correct", &Correct);
+    resultsTree->Branch("Detector",&Detector);
+ 
+    for(UInt_t ivar = 0; ivar<nVars; ivar++) {
+        resultsTree->Branch( variableNames[ivar], &(treevars[ivar]));
+    }  
     // integer used to check class
     Int_t                classID;
     resultsTree->Branch("classID", &classID);
-    resultsTree->Branch("Topo",    &Topo);
- 
     TString         className;
-    //resultsTree->Branch("className", &className, "className/C");
     std::vector<TString> classNames =  {"Background", "Signal", }; // {0, 1}
     std::vector<TString> branchNames = {};
     // vector to correct for ordering of data
@@ -299,7 +313,7 @@ void SplitApplication()
        theTree->GetEntry(ievt);
  
        if (ievt == 1000) {
-           break;
+           //break;
        }
  
        // save event class
