@@ -95,14 +95,15 @@ void SortTree()
     Int_t   PimDet;
 
     // Detector to split for
-    Int_t Det = 1;
+    Int_t Det = 99;
 
     // create ouput file
-    TString outputFname = "../data/tmva3/Data2Pi_" + std::to_string(Det) + ".root";
+    //TString outputFname = "../data/tmva3/Data2Pi_" + std::to_string(Det) + ".root";
+    TString outputFname = "../data/tmva3/Data2Pi_ALL.root";
     TFile *output = TFile::Open(outputFname, "RECREATE");
 
     // trees to fill
-    TTree *t0 = new TTree("D1Tree", "Tree for detector type 1");
+    TTree *t0 = new TTree("DALLTree", "Tree for detector type ALL");
 
     // set branches
     // General
@@ -218,6 +219,7 @@ void SortTree()
             NPerm = *tmpNPerm;
             NDet = *tmpNDet;
             Correct = *tmpCorrect;
+            Detector = *tmpDetector;
             // Electron
             ElTime = check(*tmpElTime);
             ElEdep = check(*tmpElEdep);
@@ -260,6 +262,58 @@ void SortTree()
             PimTrChi2 = check(*tmpPimTrChi2);
 
             t0->Fill();
+        }
+        else {
+            if (Det == 99){
+                // General
+                Topo = *tmpTopo;
+                NPerm = *tmpNPerm;
+                NDet = *tmpNDet;
+                Correct = *tmpCorrect;
+                Detector = *tmpDetector;
+                // Electron
+                ElTime = check(*tmpElTime);
+                ElEdep = check(*tmpElEdep);
+                ElDeltaE = check(*tmpElDeltaE);
+                ElPreE = check(*tmpElPreE);
+                ElP = check(*tmpElP);
+                ElTh = check(*tmpElTh);
+                ElPhi = check(*tmpElPhi);
+                ElVz = check(*tmpElVz);
+                ElTrChi2 = check(*tmpElTrChi2);
+                // Proton 
+                PTime = check(*tmpPTime);
+                PEdep = check(*tmpPEdep);
+                PDeltaE = check(*tmpPDeltaE);
+                PPreE = check(*tmpPPreE);
+                PP = check(*tmpPP);
+                PTh = check(*tmpPTh);
+                PPhi = check(*tmpPPhi);
+                PVz = check(*tmpPVz);
+                PTrChi2 = check(*tmpPTrChi2);
+                // Pi + 
+                PipTime = check(*tmpPipTime);
+                PipEdep = check(*tmpPipEdep);
+                PipDeltaE = check(*tmpPipDeltaE);
+                PipPreE = check(*tmpPipPreE);
+                PipP = check(*tmpPipP);
+                PipTh = check(*tmpPipTh);
+                PipPhi = check(*tmpPipPhi);
+                PipVz = check(*tmpPipVz);
+                PipTrChi2 = check(*tmpPipTrChi2);
+                // Pi - 
+                PimTime = check(*tmpPimTime);
+                PimEdep = check(*tmpPimEdep);
+                PimDeltaE = check(*tmpPimDeltaE);
+                PimPreE = check(*tmpPimPreE);
+                PimP = check(*tmpPimP);
+                PimTh = check(*tmpPimTh);
+                PimPhi = check(*tmpPimPhi);
+                PimVz = check(*tmpPimVz);
+                PimTrChi2 = check(*tmpPimTrChi2);
+
+                t0->Fill();
+            }
         }
 
     }

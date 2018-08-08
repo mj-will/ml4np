@@ -33,7 +33,7 @@ methods['PyKeras'] = 1
 
 
 use_data = True
-detector = 0
+detector = "ALL"
 
 output_name = 'Det{}.root'.format(detector)
 
@@ -77,9 +77,8 @@ signal, background = split(dataTree)
 dataloader = TMVA.DataLoader('datasetDet{0}'.format(detector))
 
 # list of variables to exclude
-#exclude = ['MissMass2', 'MissMass', 'NPerm' , 'Correct', 'UID', 'Topo', 'ElDeltaE', 'PDeltaE', 'PipDeltaE', 'PimDeltaE', 'ElTrChi2', 'PTrChi2', 'PipTrChi2', 'PimTrChi2', 'ElDet', 'Detector', 'ElEdep', 'PEdep', 'PipEdep', 'PimEdep', 'ElPreE', 'PPreE', 'PipPreE', 'PimPreE', 'ElVz', 'PVz', 'PipVz', 'PimVz']
 
-if detector == 0:
+if detector == 0 or detector == "ALL" :
     exclude = ['Correct', 'MissMass2', 'MissMass', 'UID', 'Detector', 'ElEdep', 'ElPreE', 'ElVz', 'ElTrChi2', 'ElDet', 'PDet', 'PipDet','PimDet']
 if detector == 1:
     exclude = ['Correct', 'MissMass2', 'MissMass', 'UID', 'Detector', 'ElDet','PDet', 'PipDet','PimDet']

@@ -1,4 +1,4 @@
-/// \file
+
 /// \ingroup tutorial_tmva
 /// \notebook -nodraw
 /// This macro provides a simple example on how to use the trained classifiers
@@ -53,11 +53,7 @@ void Application()
    std::cout << std::endl
              << "==> Start TMVAClassificationCategoryApplication" << std::endl;
 
-   TString  detector = "1";
-
-   // Prepare input tree (this must be replaced by your data source)
-   // in this example, there is a toy tree with signal and one with background events
-   // we'll later on use only the "signal" events for the test in this example.
+   TString detector = "ALL";
    //
    TString fname = "../data/tmva3/Data2Pi_" + TString(detector) + ".root";
    std::cout << "--- TMVAClassificationApp    : Accessing " << fname << "!" << std::endl;
@@ -70,6 +66,8 @@ void Application()
    // - here the variable names have to corresponds to your tree
    // - you can use the same variables as above which is slightly faster,
    //   but of course you can use different ones and copy the values inside the event loop
+   //
+
    TString treeName = "D" + TString(detector) + "Tree";
 
    TTree* theTree = (TTree*)input->Get(treeName);
@@ -154,13 +152,14 @@ void Application()
    //  Create the Reader object
    TMVA::Reader *reader = new TMVA::Reader( "!Color:!Silent" );
 
-   if (detector == "0") {
+   if ((detector == "0") || (detector == "ALL")) {
 
        // General
        theTree->SetBranchAddress("Topo",    &iTopo);
        theTree->SetBranchAddress("NPerm",   &iNPerm);
        theTree->SetBranchAddress("NDet",    &iNDet);
        theTree->SetBranchAddress("Correct", &Correct);
+       theTree->SetBranchAddress("Detector", &Detector);
        // Electron
        theTree->SetBranchAddress("ElTime",  &ElTime);
        //theTree->SetBranchAddress("ElEdep",  &ElEdep);
@@ -383,28 +382,31 @@ void Application()
    double pBDT;
    double pPyKeras;
    int    eventclass;
+   int    det;
 
    // File for results tree
-   TFile *resultsFile = TFile::Open("resultsDet" + TString(detector)+ ".root", "UPDATE");
+   TFile *resultsFile = TFile::Open("resultsDet" + TString(detector)+ ".root", "RECREATE");
 
    // Write TTree with results
    TTree *resultsTree = new TTree("resultsTree", "Tree with results");
 
    resultsTree->Branch("pBDT", &pBDT);
    resultsTree->Branch("pPyKeras", &pPyKeras);
-   resultsTree->Branch("class", &eventclass);
+   resultsTree->Branch("eventclass", &eventclass);
+   resultsTree->Branch("Detector", &det);
 
    // for (Long64_t ievt=0; ievt<theTree->GetEntries();ievt++) {
 
    std::map<std::string,double> p;
 
-   for (Long64_t ievt=0; ievt <= 10000; ievt++) {
+   for (Long64_t ievt=0; ievt <theTree->GetEntries(); ievt++) {
       if (ievt%1000 == 0) std::cout << "--- ... Processing event: " << ievt << std::endl;
 
       theTree->GetEntry(ievt);
 
       // save event class
       eventclass = Correct;
+      det = Detector;
 
       // Return the MVA outputs and fill into histograms
       
@@ -416,6 +418,7 @@ void Application()
       }
       if (Use["PyKeras"]) {
           pPyKeras = p["PyKeras"];
+          //std::cout<<pPyKeras<<std::endl;
       }
       if (Use["BDT"]) {
           pBDT = p["BDT"];
