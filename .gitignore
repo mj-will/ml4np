@@ -111,6 +111,9 @@ papers/
 *models*/
 old/
 
+# ignore anything tagged as .old
+*.old
+
 # root files
 *.root
 # figures not in figures dir
@@ -118,6 +121,12 @@ pyroot/*.png
 pyroot/*.pdf
 root/*.pdf
 detector_split/*.png
+multibackground/*.png
+topo_split/*.png
+
+topo_split/kbkg/*
+topo_split/pythia/*
+topo_split/*.*py*
 
 # models
 model.*
