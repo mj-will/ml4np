@@ -32,6 +32,8 @@ In the following example will use:
 
 ### Methods
 
-Tested the avaiable methods in TMVA and found Boosted Decision Trees (BDTs) to be the best suited for this problem. 
+The code is setup so it's easy to compare the various MVA methods available
 
+![roc0]( https://github.com/mj-will/ml4np/blob/master/figures/final/classifiers.png?raw=true)
 
+---
